@@ -1,0 +1,24 @@
+{
+  "name": "gatling-training-exercises-ts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "target/bundle",
+  "dependencies": {
+    "@gatling.io/core": "3.14.905",
+    "@gatling.io/http": "3.14.905"
+  },
+  "devDependencies": {
+    "@gatling.io/cli": "3.14.905",
+    "rimraf": "^6.0.0",
+    "typescript": "^5.6.0"
+  },
+  "scripts": {
+    "clean": "rimraf target",
+    "build": "gatling build",
+    "recorder": "gatling recorder",
+    "basicSim": "gatling run --simulation=basicSimulation",
+    "package": "gatling enterprise-package",
+    "deploy": "gatling enterprise-deploy"
+  }
+}
