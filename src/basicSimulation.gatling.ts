@@ -11,6 +11,7 @@ export default simulation((setUp) => {
   // Test profile selector — drives injection profile (1-7) and assertions (1-8).
   const testType = getParameter("testType", "smoke");
   const duration = parseInt(getParameter("duration", "10"));
+  const scenarioNumber = parseInt(getParameter("scenarioNumber", "1"));
 
   // Define HTTP configuration
   // Reference: https://docs.gatling.io/reference/script/protocols/http/protocol/
@@ -75,8 +76,22 @@ export default simulation((setUp) => {
     }
   };
 
+  // Pick which scenario to run at simulation start, based on the scenarioNumber property.
+  // Mirrors the injectionProfile / getAssertions pattern: input value → matching object.
+  const getScenario = (n: number): ScenarioBuilder => {
+    switch (n) {
+      case 1:
+        return scenario1;
+      case 2:
+        return scenario2;
+      default:
+        return scenario1;
+    }
+  };
+
   // Define injection profile and execute the test
-  setUp(injectionProfile(scenario1), injectionProfile(scenario2))
+  // One scenario per run, chosen by -DscenarioNumber=…
+  setUp(injectionProfile(getScenario(scenarioNumber)))
     .assertions(...getAssertions())
     .protocols(httpProtocol);
 });
