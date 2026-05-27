@@ -34,3 +34,12 @@ export const addToCart = http("Add to cart")
   .asJson()
   .body(ElFileBody("bodies/cart.json"))
   .check(status().is(200));
+
+  // Checkout — needs the bearer token captured by the login step.
+export const checkout = http("Checkout")
+.post("/checkout")
+.header("Authorization", "#{AccessToken}")
+.asJson()
+.body(ElFileBody("bodies/cart.json"))
+.check(status().is(200))
+.check(jmesPath("message").is("Checkout completed"));
