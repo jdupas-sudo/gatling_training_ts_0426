@@ -1,4 +1,4 @@
-import { atOnceUsers, exec, feed, getParameter, jsonFile, pause, scenario, simulation } from "@gatling.io/core";
+import { atOnceUsers, exec, feed, getParameter, jsonFile, pause, PopulationBuilder, scenario, ScenarioBuilder, simulation, stressPeakUsers } from "@gatling.io/core";
 import { http } from "@gatling.io/http";
 import { addToCart, checkout, login, products, session } from "./endpoints/apiEndpoints";
 import { homepage, loginPage } from "./endpoints/webEndpoints";
@@ -8,6 +8,9 @@ export default simulation((setUp) => {
   // Load VU count from system properties
   // Reference: https://docs.gatling.io/guides/passing-parameters/
   const vu = parseInt(getParameter("vu", "1"));
+  // Test profile selector — drives injection profile (1-7) and assertions (1-8).
+  const testType = getParameter("testType", "smoke");
+  const duration = parseInt(getParameter("duration", "10"));
 
   // Define HTTP configuration
   // Reference: https://docs.gatling.io/reference/script/protocols/http/protocol/
@@ -31,7 +34,20 @@ export default simulation((setUp) => {
     buy
   );
 
-  // Define injection profile and execute the test
+  // Pick an injection profile based on the testType system property.
   // Reference: https://docs.gatling.io/reference/script/core/injection/
-  setUp(scn.injectOpen(atOnceUsers(vu))).protocols(httpProtocol);
+  const injectionProfile = (scn: ScenarioBuilder): PopulationBuilder => {
+    switch (testType) {
+      case "stress":
+        return scn.injectOpen(stressPeakUsers(vu).during(duration));
+      case "smoke":
+        return scn.injectOpen(atOnceUsers(1));
+      default:
+        return scn.injectOpen(atOnceUsers(vu));
+    }
+  };
+
+  // Define injection profile and execute the test
+  setUp(injectionProfile(scn))
+    .protocols(httpProtocol);
 });
