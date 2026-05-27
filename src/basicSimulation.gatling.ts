@@ -1,4 +1,4 @@
-import { atOnceUsers, exec, feed, getParameter, global, jsonFile, pause, PopulationBuilder, scenario, ScenarioBuilder, simulation, stressPeakUsers } from "@gatling.io/core";
+import { Assertion, atOnceUsers, exec, feed, getParameter, global, jsonFile, pause, PopulationBuilder, scenario, ScenarioBuilder, simulation, stressPeakUsers } from "@gatling.io/core";
 import { http } from "@gatling.io/http";
 import { addToCart, checkout, login, products, session } from "./endpoints/apiEndpoints";
 import { homepage, loginPage } from "./endpoints/webEndpoints";
@@ -34,13 +34,6 @@ export default simulation((setUp) => {
     buy
   );
 
-    // Acceptance criteria for the load test.
-  // Reference: https://docs.gatling.io/reference/script/core/assertions/
-  const assertions = [
-    global().responseTime().percentile(90.0).lt(500),
-    global().failedRequests().percent().lt(5.0),
-  ];
-
   // Pick an injection profile based on the testType system property.
   // Reference: https://docs.gatling.io/reference/script/core/injection/
   const injectionProfile = (scn: ScenarioBuilder): PopulationBuilder => {
@@ -54,8 +47,27 @@ export default simulation((setUp) => {
     }
   };
 
+    // Acceptance criteria for the load test.
+  // Reference: https://docs.gatling.io/reference/script/core/assertions/
+  const defaultAssertions = [
+    global().responseTime().percentile(90.0).lt(500),
+    global().failedRequests().percent().lt(5.0),
+  ];
+
+  // Pick assertions based on testType. Smoke runs only check that nothing blew up.
+  const getAssertions = (): Assertion[] => {
+    switch (testType) {
+      case "stress":
+        return defaultAssertions;
+      case "smoke":
+        return [global().failedRequests().count().lt(1.0)];
+      default:
+        return defaultAssertions;
+    }
+  };
+
   // Define injection profile and execute the test
   setUp(injectionProfile(scn))
-    .assertions(...assertions)
+    .assertions(...getAssertions())
     .protocols(httpProtocol);
 });
