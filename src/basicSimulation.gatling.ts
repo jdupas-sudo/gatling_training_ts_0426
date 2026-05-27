@@ -2,7 +2,7 @@ import { Assertion, atOnceUsers, exec, feed, getParameter, global, jsonFile, pau
 import { http } from "@gatling.io/http";
 import { addToCart, checkout, login, products, session } from "./endpoints/apiEndpoints";
 import { homepage, loginPage } from "./endpoints/webEndpoints";
-import { authenticate, browseAndAddToCart, buy, homeAnonymous } from "./groups/scenarioGroups";
+import { authenticate, browseAllPagesAndAddToCart, browseAndAddToCart, buy, homeAnonymous } from "./groups/scenarioGroups";
 
 export default simulation((setUp) => {
   // Load VU count from system properties
@@ -24,7 +24,7 @@ export default simulation((setUp) => {
   // Define scenario
   // Reference: https://docs.gatling.io/reference/script/core/scenario/
   // Exercise 1-3 — browse the first page of products, pick one at random, add it to the cart.
-  const scn = scenario("Scenario").exec(
+  const scenario1 = scenario("Scenario").exec(
     homeAnonymous,
     pause(1, 2),
     authenticate,
@@ -32,6 +32,15 @@ export default simulation((setUp) => {
     browseAndAddToCart,
     pause(2),
     buy
+  );
+
+  const scenario2 = scenario("Scenario 2").exec(
+    homeAnonymous,
+    pause(1, 2),
+    authenticate,
+    pause(1, 3),
+    browseAllPagesAndAddToCart,
+    pause(2)
   );
 
   // Pick an injection profile based on the testType system property.
@@ -67,7 +76,8 @@ export default simulation((setUp) => {
   };
 
   // Define injection profile and execute the test
-  setUp(injectionProfile(scn))
+  setUp(injectionProfile(scenario1), injectionProfile(scenario2))
     .assertions(...getAssertions())
     .protocols(httpProtocol);
 });
+
