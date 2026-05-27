@@ -10,7 +10,6 @@ export default simulation((setUp) => {
 
   // Credentials feeder — circular() recycles entries so we don't run out of users mid-test.
   const usersFeeder = jsonFile("data/users_dev.json").circular();
-  const productFeeder = jsonFile("data/product.json").random();
 
   // Define HTTP configuration
   // Reference: https://docs.gatling.io/reference/script/protocols/http/protocol/
