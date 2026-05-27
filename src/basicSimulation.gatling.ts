@@ -1,5 +1,7 @@
 import { atOnceUsers, getParameter, global, scenario, simulation } from "@gatling.io/core";
 import { http } from "@gatling.io/http";
+import { homepage } from "./endpoints/webEndpoints";
+import { session } from "./endpoints/apiEndpoints";
 
 export default simulation((setUp) => {
   // Load VU count from system properties
@@ -17,7 +19,7 @@ export default simulation((setUp) => {
 
   // Define scenario
   // Reference: https://docs.gatling.io/reference/script/core/scenario/
-  const scn = scenario("Scenario").exec(http("Session").get("/session"));
+  const scn = scenario("Scenario 1").exec(homepage, session);
 
   // Define assertions
   // Reference: https://docs.gatling.io/reference/script/core/assertions/
